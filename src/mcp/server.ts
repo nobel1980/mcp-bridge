@@ -1,27 +1,73 @@
-// src/server.ts
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import { projectService } from "../services/project.service.js";
 
-import express from "express";
-import cors from "cors";
+export const server = new McpServer({
+    name: "project-context-server",
+    version: "1.0.0",
+});
 
+// Register Tools
+// Signature: .tool(name, schema, handler)
+server.tool(
+    "get_project_summary",
+    { path: z.string().describe("Path to the directory").optional().default(".") }, // Schema + Descriptions here
+    async ({ path: dirPath }) => {
+        const files = await projectService.getSummary(dirPath);
+        return {
+            content: [{
+                type: "text",
+                text: `Files in ${dirPath}: ${files.join(", ")}`
+            }]
+        };
+    }
+);
 
-import toolRoutes from "./tools/index.js";
-import resourceRoutes from "./resources/index.js";
+// Standardize the tool signature
+server.tool(
+    "read_file",
+    { path: z.string().describe("The absolute path to the file to read") },
+    async ({ path }) => {
+        try {
+            const content = await projectService.readFileContent(path);
+            return {
+                content: [{ type: "text", text: content }]
+            };
+        } catch (error: any) {
+            return {
+                content: [{ type: "text", text: `Error reading file: ${error.message}` }],
+                isError: true
+            };
+        }
+    }
+);
 
-export const createServer = () => {
-    const app = express();
+// Register Resources
+server.resource(
+    "system_info",
+    "system://info",
+    async (uri) => {
+        return {
+            contents: [{
+                uri: uri.href,
+                mimeType: "application/json",
+                text: JSON.stringify({ os: "windows", platform: process.platform })
+            }]
+        };
+    }
+);
 
-    app.use(cors());
-    app.use(express.json());
-
-    app.get("/", (_, res) => {
-        res.json({
-            name: "Custom MCP Server",
-            status: "running",
-        });
-    });
-
-    app.use("/tools", toolRoutes);
-    app.use("/resources", resourceRoutes);
-
-    return app;
-};
+// Register Prompts
+server.prompt(
+    "analyze_project",
+    { dir: z.string().describe("Directory to analyze").optional() }, // Use Zod schema for prompt args too
+    ({ dir }) => ({
+        messages: [{
+            role: "user",
+            content: {
+                type: "text",
+                text: `Please analyze the project at ${dir || "."}`
+            }
+        }]
+    })
+);

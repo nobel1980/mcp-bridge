@@ -1,35 +1,43 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod"; // You already have this in your package.json!
+import "dotenv/config";
 
-// 1. Create the server instance
-const server = new McpServer({
-    name: "my-first-mcp-server",
-    version: "1.0.0",
-});
+import { startHttpServer } from "./transports/http.js";
+import { startStdioServer } from "./transports/stdio.js";
+// import { startSseServer } from "./transports/sse.js";
 
-// 2. Register a tool using the new helper (it uses Zod automatically!)
-server.tool(
-    "get_project_summary",
-    "Lists all files in the current directory",
-    {
-        // If you had arguments, you'd define them here with Zod
-        // e.g., folder: z.string()
-    },
-    async () => {
-        const fs = await import("node:fs");
-        const files = fs.readdirSync(process.cwd());
-        return {
-            content: [{ type: "text", text: `Files: ${files.join(", ")}` }]
-        };
+async function bootstrap() {
+    // Priority: Command line arg OR .env file OR default to stdio
+    const mode = process.env.TRANSPORT || "stdio";
+
+    console.error(`[BOOTSTRAP] Initializing in ${mode} mode...`);
+
+    if (mode === "http") {
+        await startHttpServer();
+    } else {
+        await startStdioServer();
     }
-);
-
-// 3. Connect using the same transport logic
-async function main() {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    console.error("MCP Server running on stdio");
 }
 
-main().catch(console.error);
+// async function bootstrap() {
+
+//     await Promise.all([
+//         startHttpServer(),
+//         startStdioServer(),
+//         startSseServer(),
+//     ]);
+
+// console.log("All transports started");
+// }
+
+// Global Lifecycle Handlers
+bootstrap().catch((err) => {
+    console.error("Fatal Error during bootstrap:", err);
+    process.exit(1);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("[CRITICAL] Uncaught Exception:", error);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("[CRITICAL] Unhandled Rejection at:", promise, "reason:", reason);
+});

@@ -1,5 +1,6 @@
 // src/utils/logger.ts
-
-export const logger = (message: string) => {
-    console.log(`[MCP] ${message}`);
+export const logger = {
+    info: (msg: string, ...args: any[]) => console.error(`[INFO] ${msg}`, ...args),
+    warn: (msg: string, ...args: any[]) => console.error(`[WARN] ${msg}`, ...args),
+    error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args),
 };
