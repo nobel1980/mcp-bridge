@@ -1,11 +1,9 @@
-// src/server.ts
-
 import express from "express";
 import cors from "cors";
 
 
-import toolRoutes from "../mcp/tools/index.js";
-import resourceRoutes from "../mcp/resources/index.js";
+// import toolRoutes from "../mcp/tools/index.js";
+// import resourceRoutes from "../mcp/resources/index.js";
 
 export const createServer = () => {
     const app = express();
@@ -20,8 +18,8 @@ export const createServer = () => {
         });
     });
 
-    app.use("/tools", toolRoutes);
-    app.use("/resources", resourceRoutes);
+    // app.use("/tools", toolRoutes);
+    // app.use("/resources", resourceRoutes);
 
     return app;
 };

@@ -2,31 +2,34 @@ import "dotenv/config";
 
 import { startHttpServer } from "./transports/http.js";
 import { startStdioServer } from "./transports/stdio.js";
-// import { startSseServer } from "./transports/sse.js";
-
-async function bootstrap() {
-    // Priority: Command line arg OR .env file OR default to stdio
-    const mode = process.env.TRANSPORT || "stdio";
-
-    console.error(`[BOOTSTRAP] Initializing in ${mode} mode...`);
-
-    if (mode === "http") {
-        await startHttpServer();
-    } else {
-        await startStdioServer();
-    }
-}
+import { startSseServer } from "./transports/sse.js";
+import { startRestApi } from "./api/rest.js";
 
 // async function bootstrap() {
+//     // Priority: Command line arg OR .env file OR default to stdio
+//     const mode = process.env.TRANSPORT || "stdio";
 
-//     await Promise.all([
-//         startHttpServer(),
-//         startStdioServer(),
-//         startSseServer(),
-//     ]);
+//     console.error(`[BOOTSTRAP] Initializing in ${mode} mode...`);
 
-// console.log("All transports started");
+//     if (mode === "http") {
+//         await startHttpServer();
+//     } else {
+//         await startStdioServer();
+//     }
 // }
+
+async function bootstrap() {
+
+    await Promise.all([
+        startHttpServer(),
+        startStdioServer(),
+        startRestApi(),
+        startSseServer(),
+
+    ]);
+
+    console.error("All transports started");
+}
 
 // Global Lifecycle Handlers
 bootstrap().catch((err) => {

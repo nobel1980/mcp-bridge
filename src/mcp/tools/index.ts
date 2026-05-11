@@ -1,35 +1,14 @@
-// src/tools/index.ts
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import express from "express";
-import { readLogs } from "./logTool.js";
+import { registerProjectSummaryTool }
+    from "./project-summary.tool.js";
 
-const router = express.Router();
+import { registerReadFileTool }
+    from "./read-file.tool.js";
 
-router.get("/", (_, res) => {
-    res.json({
-        tools: [
-            {
-                name: "read-logs",
-                description: "Read application logs",
-            },
-        ],
-    });
-});
+export function registerTools(server: McpServer) {
 
-router.post("/read-logs", async (req, res) => {
-    try {
-        const result = await readLogs(req.body.date);
+    registerProjectSummaryTool(server);
 
-        res.json({
-            success: true,
-            result,
-        });
-    } catch (error: any) {
-        res.status(400).json({
-            success: false,
-            error: error.message,
-        });
-    }
-});
-
-export default router;
+    registerReadFileTool(server);
+}

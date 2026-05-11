@@ -1,12 +1,10 @@
-// src/resources/index.ts
+import { McpServer }
+    from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import express from "express";
-import { getSystemInfo } from "./systemResource.js";
+import { registerSystemInfoResource }
+    from "./system-info.resource.js";
 
-const router = express.Router();
+export function registerResources(server: McpServer) {
 
-router.get("/system", (_, res) => {
-    res.json(getSystemInfo());
-});
-
-export default router;
+    registerSystemInfoResource(server);
+}
