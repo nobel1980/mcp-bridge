@@ -5,33 +5,44 @@ import { startStdioServer } from "./transports/stdio.js";
 import { startSseServer } from "./transports/sse.js";
 import { startRestApi } from "./api/rest.js";
 
-// async function bootstrap() {
-//     // Priority: Command line arg OR .env file OR default to stdio
-//     const mode = process.env.TRANSPORT || "stdio";
-
-//     console.error(`[BOOTSTRAP] Initializing in ${mode} mode...`);
-
-//     if (mode === "http") {
-//         await startHttpServer();
-//     } else {
-//         await startStdioServer();
-//     }
-// }
-
 async function bootstrap() {
 
-    await Promise.all([
-        startHttpServer(),
-        startStdioServer(),
-        startRestApi(),
-        startSseServer(),
+    const mode = process.env.TRANSPORT || "http";
 
-    ]);
+    console.error(`[BOOTSTRAP] Mode: ${mode}`);
 
-    console.error("All transports started");
+    switch (mode) {
+
+        case "http":
+            await startHttpServer();
+            break;
+
+        case "stdio":
+            await startStdioServer();
+            break;
+
+        case "all":
+            await Promise.all([
+                startHttpServer(),
+                startRestApi(),
+                startSseServer(),
+            ]);
+            break;
+
+        case "dev":
+            await Promise.all([
+                startHttpServer(),
+                startRestApi(),
+                startSseServer(),
+                startStdioServer(),
+            ]);
+            break;
+
+        default:
+            throw new Error(`Unknown transport: ${mode}`);
+    }
 }
 
-// Global Lifecycle Handlers
 bootstrap().catch((err) => {
     console.error("Fatal Error during bootstrap:", err);
     process.exit(1);

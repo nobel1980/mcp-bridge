@@ -9,7 +9,11 @@
     "start": "dotenv node dist/index.js",
     "start:http": "dotenv -e .env cross-env TRANSPORT=http node dist/index.js",
     "dev": "ts-node-dev --node-args=\"--loader ts-node/esm\" src/index.ts",
-    "prestart": "npm run build"
+    "prestart": "npm run build",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +26,7 @@
     "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
     "express": "^5.2.1",
+    "mysql2": "^3.22.3",
     "path": "^0.12.7",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3",
